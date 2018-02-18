@@ -1,4 +1,5 @@
 /** @jsx createElement */
-const Counter = ({ createElement }) => <button>Clicked 0 times</button>
-
+const Counter = ({ createElement, value, increment }) => (
+  <button onClick={increment}>Clicked {value} times</button>
+)
 export default Counter
