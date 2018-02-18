@@ -1,7 +1,7 @@
 /** @jsx createElement */
 import { createElement } from 'react'
 import { render } from 'react-dom'
-import { map, channel, put } from './toolbox/csp'
+import { map, filter, channel, put } from './toolbox/csp'
 import { pipe } from './toolbox/fp'
 
 const root = document.getElementById('root')
@@ -13,9 +13,11 @@ const App = ({ createElement, message }) => <div>{message}</div>
 
 const appIn = channel()
 // prettier-ignore
-const appOut = pipe(
+pipe(
   map(App),
   map(asyncRender(root)),
+  filter(() => false),
 )(appIn)
 
 put(appIn, { createElement, message: 'Hello world!' })
+put(appIn, { createElement, message: 'Hello new world!' })
