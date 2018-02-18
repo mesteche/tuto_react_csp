@@ -37,6 +37,19 @@ export const filter = predicate => inChan => {
   return outChan
 }
 
+export const reduce = (reducer, acc) => inChan => {
+  const outChan = channel()
+  ;(async () => {
+    while (true) {
+      const msg = await take(inChan)
+      acc = await reducer(acc, msg)
+      await put(outChan, acc)
+    }
+  })()
+
+  return outChan
+}
+
 const tryTake = ({ takers, messages }) => {
   if (messages.length && takers.length) {
     const [msg, taker] = [messages.pop(), takers.pop()]
