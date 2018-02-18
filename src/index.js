@@ -66,18 +66,16 @@ const mapStateToProps = ({ Counter1, Counter2, sync }) => ({
 
 const appIn = channel()
 pipe(
-  reduce(stateReducer, {
-    Counter1: 0,
-    Counter2: 0,
-    sync: false,
-  }),
+  reduce(stateReducer),
   map(mapStateToProps),
   map(App),
   map(asyncRender(root)),
   filter(() => false),
 )(appIn)
 /**
- * On envoie quelque chose sur notre channel
- * histoire qu'il lance un premier rendu
+ * On teste nos réducers avec quelques actions
  **/
-put(appIn)
+put(appIn, { Counter1: { increment: 1 } })
+put(appIn, { Counter1: { increment: 3 } })
+put(appIn, { Counter2: { decrement: 3 } })
+put(appIn, { Counter1: { increment: 5 } })
