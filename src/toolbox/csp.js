@@ -25,6 +25,18 @@ export const map = mappingFunction => inChan => {
   return outChan
 }
 
+export const filter = predicate => inChan => {
+  const outChan = channel()
+  ;(async () => {
+    while (true) {
+      const msg = await take(inChan)
+      ;(await predicate(msg)) && put(outChan, msg)
+    }
+  })()
+
+  return outChan
+}
+
 const tryTake = ({ takers, messages }) => {
   if (messages.length && takers.length) {
     const [msg, taker] = [messages.pop(), takers.pop()]
