@@ -12,6 +12,19 @@ export const take = ch =>
     tryTake(ch)
   })
 
+export const map = mappingFunction => inChan => {
+  const outChan = channel()
+  ;(async () => {
+    while (true) {
+      const inMsg = await take(inChan)
+      const outMsg = await mappingFunction(inMsg)
+      await put(outChan, outMsg)
+    }
+  })()
+
+  return outChan
+}
+
 const tryTake = ({ takers, messages }) => {
   if (messages.length && takers.length) {
     const [msg, taker] = [messages.pop(), takers.pop()]
