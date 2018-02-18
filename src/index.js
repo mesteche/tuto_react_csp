@@ -1,27 +1,17 @@
 /** @jsx createElement */
 import { createElement } from 'react'
 import { render } from 'react-dom'
-import Title from './Components/Title'
-import Counter from './Components/Counter'
-const state = {
-  counterValue: 0,
-}
-const incrementCounter = () => {
-  console.log('click')
-  state.counterValue = state.counterValue + 1
-  renderApp(state)
-}
-const renderApp = state => {
-  render(
-    <div>
-      <Title createElement={createElement} title="Hello world!" />
-      <Counter
-        createElement={createElement}
-        value={state.counterValue}
-        increment={incrementCounter}
-      />
-    </div>,
-    document.getElementById('root'),
-  )
-}
-renderApp(state)
+import { map, channel, put } from './toolbox/csp'
+
+const root = document.getElementById('root')
+
+const asyncRender = DOMNode => vDOM =>
+  new Promise(resolve => render(vDOM, DOMNode, () => resolve(vDOM)))
+
+const renderer = DOMNode => map(asyncRender(DOMNode))
+
+const App = ({ createElement, message }) => <div>{message}</div>
+
+const appIn = channel()
+const appOut = renderer(root)(map(App)(appIn))
+put(appIn, { createElement, message: 'Hello world!' })
