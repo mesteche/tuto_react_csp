@@ -9,15 +9,19 @@ const state = {
 const incrementCounter = () => {
   console.log('click')
   state.counterValue = state.counterValue + 1
+  renderApp(state)
 }
-render(
-  <div>
-    <Title createElement={createElement} title="Hello world!" />
-    <Counter
-      createElement={createElement}
-      value={state.counterValue}
-      increment={incrementCounter}
-    />
-  </div>,
-  document.getElementById('root'),
-)
+const renderApp = state => {
+  render(
+    <div>
+      <Title createElement={createElement} title="Hello world!" />
+      <Counter
+        createElement={createElement}
+        value={state.counterValue}
+        increment={incrementCounter}
+      />
+    </div>,
+    document.getElementById('root'),
+  )
+}
+renderApp(state)
