@@ -48,20 +48,44 @@ const mapStateToProps = ({ Counter1, Counter2, sync }) => ({
       createElement,
       label,
       value: Counter1,
-      increment: () => {},
-      decrement: () => {},
-      reset: () => {},
+      increment: () =>
+        put(appIn, {
+          Counter1: { increment: 1 },
+          ...(sync ? { Counter2: { increment: 1 } } : {}),
+        }),
+      decrement: () =>
+        put(appIn, {
+          Counter1: { decrement: 1 },
+          ...(sync ? { Counter2: { decrement: 1 } } : {}),
+        }),
+      reset: () =>
+        put(appIn, {
+          Counter1: { reset: null },
+          ...(sync ? { Counter2: { reset: null } } : {}),
+        }),
     }),
   Counter2: ({ label, ...props }) =>
     Counter({
       createElement,
       label,
       value: Counter2,
-      increment: () => {},
-      decrement: () => {},
-      reset: () => {},
+      increment: () =>
+        put(appIn, {
+          Counter2: { increment: 1 },
+          ...(sync ? { Counter1: { increment: 1 } } : {}),
+        }),
+      decrement: () =>
+        put(appIn, {
+          Counter2: { decrement: 1 },
+          ...(sync ? { Counter1: { decrement: 1 } } : {}),
+        }),
+      reset: () =>
+        put(appIn, {
+          Counter2: { reset: null },
+          ...(sync ? { Counter1: { reset: null } } : {}),
+        }),
     }),
-  toggleSync: () => {},
+  toggleSync: () => put(appIn, { sync: null }),
 })
 
 const appIn = channel()
@@ -72,10 +96,4 @@ pipe(
   map(asyncRender(root)),
   filter(() => false),
 )(appIn)
-/**
- * On teste nos réducers avec quelques actions
- **/
-put(appIn, { Counter1: { increment: 1 } })
-put(appIn, { Counter1: { increment: 3 } })
-put(appIn, { Counter2: { decrement: 3 } })
-put(appIn, { Counter1: { increment: 5 } })
+put(appIn)
