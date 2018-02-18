@@ -1,8 +1,8 @@
 /** @jsx createElement */
 import { createElement } from 'react'
 import { render } from 'react-dom'
-import Title from './Title'
-import Counter from './Counter'
+import Title from './Components/Title'
+import Counter from './Components/Counter'
 const state = {
   counterValue: 0,
 }
