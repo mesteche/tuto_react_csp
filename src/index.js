@@ -1,5 +1,5 @@
 /** @jsx createElement */
-import { createElement } from 'react'
+import { createElement as RCE } from 'react'
 import { render } from 'react-dom'
 import { pipe } from './toolbox/fp'
 import { map, reduce, filter, channel, put } from './toolbox/csp'
@@ -10,6 +10,14 @@ const root = document.getElementById('root')
 
 const asyncRender = DOMNode => vDOM =>
   new Promise(resolve => render(vDOM, DOMNode, () => resolve(vDOM)))
+
+// prettier-ignore
+const createElement = (component, props, ...children) =>
+  typeof component === 'string' ?
+    RCE(component, props, ...children) :
+  process.env.NODE_ENV === 'development' ?
+    RCE(component, { createElement, ...props }, ...children) :
+  component({ createElement, ...props, ...children })
 
 // prettier-ignore
 const counterReducer = (state = 0, actions = {}) =>
@@ -43,10 +51,9 @@ const stateReducer = (
 
 const mapStateToProps = ({ Counter1, Counter2, sync }) => ({
   createElement,
-  Counter1: ({ label, ...props }) =>
+  Counter1: props =>
     Counter({
-      createElement,
-      label,
+      ...props,
       value: Counter1,
       increment: () =>
         put(appIn, {
@@ -64,10 +71,9 @@ const mapStateToProps = ({ Counter1, Counter2, sync }) => ({
           ...(sync ? { Counter2: { reset: null } } : {}),
         }),
     }),
-  Counter2: ({ label, ...props }) =>
+  Counter2: props =>
     Counter({
-      createElement,
-      label,
+      ...props,
       value: Counter2,
       increment: () =>
         put(appIn, {
