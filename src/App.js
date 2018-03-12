@@ -1,6 +1,6 @@
-import { put, map, reduce } from './toolbox/csp'
-import { pipe } from './toolbox/fp'
+import createModule from './createModule'
 import App from './Components/App'
+
 import Counter from './Components/Counter'
 
 // prettier-ignore
@@ -14,7 +14,7 @@ Object.entries(actions).reduce(
   state
 )
 // prettier-ignore
-const stateReducer = (
+const reducer = (
 state = {
   Counter1: counterReducer(),
   Counter2: counterReducer(),
@@ -33,23 +33,23 @@ actions = {}
 state,
 )
 
-const mapStateToProps = inChan => ({ Counter1, Counter2, sync }) => ({
+const mapStoreToProps = dispatch => ({ Counter1, Counter2, sync }) => ({
   Counter1: props =>
     Counter({
       ...props,
       value: Counter1,
       increment: () =>
-        put(inChan, {
+        dispatch({
           Counter1: { increment: 1 },
           ...(sync ? { Counter2: { increment: 1 } } : {}),
         }),
       decrement: () =>
-        put(inChan, {
+        dispatch({
           Counter1: { decrement: 1 },
           ...(sync ? { Counter2: { decrement: 1 } } : {}),
         }),
       reset: () =>
-        put(inChan, {
+        dispatch({
           Counter1: { reset: null },
           ...(sync ? { Counter2: { reset: null } } : {}),
         }),
@@ -59,29 +59,22 @@ const mapStateToProps = inChan => ({ Counter1, Counter2, sync }) => ({
       ...props,
       value: Counter2,
       increment: () =>
-        put(inChan, {
+        dispatch({
           Counter2: { increment: 1 },
           ...(sync ? { Counter1: { increment: 1 } } : {}),
         }),
       decrement: () =>
-        put(inChan, {
+        dispatch({
           Counter2: { decrement: 1 },
           ...(sync ? { Counter1: { decrement: 1 } } : {}),
         }),
       reset: () =>
-        put(inChan, {
+        dispatch({
           Counter2: { reset: null },
           ...(sync ? { Counter1: { reset: null } } : {}),
         }),
     }),
-  toggleSync: () => put(inChan, { sync: null }),
+  toggleSync: () => dispatch({ sync: null }),
 })
 
-export const app = inChan =>
-  pipe(
-    reduce(stateReducer),
-    map(mapStateToProps(inChan)),
-    map(state => props => App({ ...state, ...props })),
-  )(inChan)
-
-export default app
+export default createModule(App)({ reducer, mapStoreToProps })

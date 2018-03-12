@@ -2,7 +2,7 @@
 import { createElement as RCE } from 'react'
 import { render } from 'react-dom'
 import { pipe } from './toolbox/fp'
-import { map, filter, channel, put } from './toolbox/csp'
+import { map, filter } from './toolbox/csp'
 import App from './App'
 
 const root = document.getElementById('root')
@@ -16,12 +16,10 @@ const createElement = (component, props, ...children) =>
     RCE(component, props, ...children) :
   process.env.NODE_ENV === 'development' ?
     RCE(component, { createElement, ...props }, ...children) :
-  component({ createElement, ...props, ...children })
-
-const autoRun = app => (inChan = channel()) => put(inChan) && app(inChan)
+  component({ createElement, ...props, children })
 
 pipe(
-  autoRun(App),
+  App,
   map(C => C({ createElement })),
   map(asyncRender(root)),
   filter(() => false),
