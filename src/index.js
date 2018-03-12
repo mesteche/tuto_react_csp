@@ -2,9 +2,8 @@
 import { createElement as RCE } from 'react'
 import { render } from 'react-dom'
 import { pipe } from './toolbox/fp'
-import { map, reduce, filter, channel, put } from './toolbox/csp'
-import App from './Components/App'
-import Counter from './Components/Counter'
+import { map, filter, channel, put } from './toolbox/csp'
+import App from './App'
 
 const root = document.getElementById('root')
 
@@ -19,87 +18,11 @@ const createElement = (component, props, ...children) =>
     RCE(component, { createElement, ...props }, ...children) :
   component({ createElement, ...props, ...children })
 
-// prettier-ignore
-const counterReducer = (state = 0, actions = {}) =>
-  Object.entries(actions).reduce(
-    (state, [key, payload]) =>
-      key === 'increment'  ? state + (payload || 0) :
-      key === 'decrement'  ? state - (payload || 0) :
-      key === 'reset'      ? 0                      :
-      state,
-    state
-  )
-// prettier-ignore
-const stateReducer = (
-  state = {
-    Counter1: counterReducer(),
-    Counter2: counterReducer(),
-    sync: false,
-  },
-  actions = {}
-) => Object.entries(actions).reduce(
-  (state, [key, payload]) =>
-    key === 'Counter1'
-      ? { ...state, [key]: counterReducer(state[key], payload) } :
-    key === 'Counter2'
-      ? { ...state, [key]: counterReducer(state[key], payload) } :
-    key === 'sync'
-      ? { ...state, [key]: !state[key] }                         :
-    state,
-  state,
-)
+const autoRun = app => (inChan = channel()) => put(inChan) && app(inChan)
 
-const mapStateToProps = ({ Counter1, Counter2, sync }) => ({
-  createElement,
-  Counter1: props =>
-    Counter({
-      ...props,
-      value: Counter1,
-      increment: () =>
-        put(appIn, {
-          Counter1: { increment: 1 },
-          ...(sync ? { Counter2: { increment: 1 } } : {}),
-        }),
-      decrement: () =>
-        put(appIn, {
-          Counter1: { decrement: 1 },
-          ...(sync ? { Counter2: { decrement: 1 } } : {}),
-        }),
-      reset: () =>
-        put(appIn, {
-          Counter1: { reset: null },
-          ...(sync ? { Counter2: { reset: null } } : {}),
-        }),
-    }),
-  Counter2: props =>
-    Counter({
-      ...props,
-      value: Counter2,
-      increment: () =>
-        put(appIn, {
-          Counter2: { increment: 1 },
-          ...(sync ? { Counter1: { increment: 1 } } : {}),
-        }),
-      decrement: () =>
-        put(appIn, {
-          Counter2: { decrement: 1 },
-          ...(sync ? { Counter1: { decrement: 1 } } : {}),
-        }),
-      reset: () =>
-        put(appIn, {
-          Counter2: { reset: null },
-          ...(sync ? { Counter1: { reset: null } } : {}),
-        }),
-    }),
-  toggleSync: () => put(appIn, { sync: null }),
-})
-
-const appIn = channel()
 pipe(
-  reduce(stateReducer),
-  map(mapStateToProps),
-  map(App),
+  autoRun(App),
+  map(C => C({ createElement })),
   map(asyncRender(root)),
   filter(() => false),
-)(appIn)
-put(appIn)
+)()

@@ -30,7 +30,7 @@ export const filter = predicate => inChan => {
   ;(async () => {
     while (true) {
       const msg = await take(inChan)
-      ;(await predicate(msg)) && put(outChan, msg)
+      ;(await predicate(msg)) && (await put(outChan, msg))
     }
   })()
 
