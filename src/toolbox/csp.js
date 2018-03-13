@@ -50,6 +50,17 @@ export const reduce = (reducer, acc) => inChan => {
   return outChan
 }
 
+export const any = inChans => outChan => {
+  inChans.forEach(async inChan => {
+    while (true) {
+      const msg = await take(inChan)
+      await put(outChan, msg)
+    }
+  })
+
+  return outChan
+}
+
 const tryTake = ({ takers, messages }) => {
   if (messages.length && takers.length) {
     const [msg, taker] = [messages.pop(), takers.pop()]
